@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voter Registration</title>
+</head>
+
+<body>
+    <h2>Register to Vote</h2>
+    <form id="register-form" action="/register" method="post">
+        <label for="register-name">Full Name</label><br>
+        <input type="text" id="register-name" name="register-name" required><br><br>
+
+        <label for="register-dob">Date of Birth</label><br>
+        <input type="date" id="register-dob" name="register-dob" required><br><br>
+
+        <label for="register-address">Address</label><br>
+        <input type="text" id="register-address" name="register-address" required><br><br>
+
+        <label for="register-id">Driver's License Number/State ID Number/Last 4 Digits of SSN (Choose One to Enter)</label><br>
+        <input type="text" id="register-id" name="register-id" required><br><br>
+            
+        <label for="register-ssn">Last 4 SSN</label><br>
+        <input type="password" id="register-ssn" name="register-ssn" required><br><br>
+            
+        <label>I authorize the Secretary of State to use my stored digital signature for voter preregistration or registration.</label><br>
+        <input type="radio" id="signature-yes" name="register-signature" value="yes" required>
+        <label for="signature-yes">Yes</label>
+        <input type="radio" id="signature-no" name="register-signature" value="no" required>
+        <label for="signature-no">No</label><br><br>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <h2>Check Registration Status</h2>
+    <form id="status-form" action="/check_status" method="post">
+        <label for="status-name">Full Name</label>
+        <input type="text" id="status-name" name="status-name" required>
+
+        <label for="status-dob">Date of Birth</label>
+        <input type="date" id="status-dob" name="status-dob" required>
+
+        <button type="submit">Check Status</button>
+    </form>
+    
+    <script>
+        document.getElementById('register-form').addEventListener('submit', function (event) {
+            var name = document.getElementById('register-name').value;
+            var dob = document.getElementById('register-dob').value;
+            var address = document.getElementById('register-address').value;
+            var id = document.getElementById('register-id').value;
+            var signatureYes = document.getElementById('signature-yes').checked;
+
+            if (!name || !dob || !address || !id || !signatureYes) {
+                event.preventDefault();
+                alert('Please fill in all fields and confirm your signature with "Yes".');
+            }
+        });
+
+        document.getElementById('status-form').addEventListener('submit', function (event) {
+            var name = document.getElementById('status-name').value;
+            var dob = document.getElementById('status-dob').value;
+
+            if (!name || !dob) {
+                event.preventDefault();
+                alert('Please fill in both fields.');
+            }
+        });
+    </script>
+</body>
+</html>
