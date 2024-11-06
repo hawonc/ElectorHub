@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.0.2/sha.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,47 +16,16 @@
     <label for="password">Password:</label><br>
     <input type="password" id="password" name="password" required><br><br>
     
-    <input type="submit" value="Login">
+    <input onclick="mySubmit(this)" type="submit" value="Login">
 </form>
-<h2>Voter Registration Query Form</h2>
-    <form action="/query" method="POST">
-        <label for="license">Driver's License Number:</label>
-        <input type="text" id="license" name="license" placeholder="Enter driver's license number" pattern="[A-Za-z0-9]{1,20}" maxlength="20">
-
-        <br><br>
-
-        <label for="ssn">Last 4 SSN:</label>
-        <input type="text" id="ssn" name="ssn" placeholder="****" pattern="\d{4}" maxlength="4">
-
-        <br><br>
-
-        <label for="dob">Date of Birth:</label>
-        <input type="date" id="dob" name="dob">
-
-        <br><br>
-
-        <input type="submit" value="Submit">
-    </form>
-
-    <script>
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function(event) {
-            const license = document.getElementById('license').value;
-            const ssn = document.getElementById('ssn').value;
-            const dob = document.getElementById('dob').value;
-
-            // Check if SSN is filled and DOB is required
-            if (ssn && !dob) {
-                alert("Please enter your date of birth when providing a social security number.");
-                event.preventDefault();
-            }
-
-            // Ensure at least one of the fields is filled
-            if (!license && !ssn) {
-                alert("Please enter either a driver's license number or a social security number.");
-                event.preventDefault();
-            }
-        });
-    </script>
+<script>
+    function mySubmit(obj) {
+        var pwdObj = document.getElementById('password');
+        var hashObj = new jsSHA("SHA-512", "TEXT", {numRounds: 1});
+        hashObj.update(pwdObj.value);
+        var hash = hashObj.getHash("HEX");
+        pwdObj.value = hash;
+    }
+</script>
 </body>
 </html>
