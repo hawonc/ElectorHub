@@ -45,7 +45,7 @@ app.post('/register', async (req, res) => {
       const { name, dob, address, id, registerSignature } = req.body;
   
       // Check against eligible voters database
-      const eligibleQuery = 'SELECT * FROM voters WHERE name = ? AND dob = ?';
+      const eligibleQuery = 'SELECT * FROM voters WHERE name = ? AND dob = ? AND address = ? AND (drivers_license_number = ? OR SUBSTRING(social_security_number, -4) = ?';
       db.query(eligibleQuery, [name, dob], (err, results) => {
           if (err) {
               throw err;
