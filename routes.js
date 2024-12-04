@@ -22,10 +22,6 @@ db.connect((err) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Registration site');
-});
-
-app.get('/register', (req, res) => {
     const options = {
         root: path.join(__dirname)
     };
