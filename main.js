@@ -1,16 +1,23 @@
 const express = require('express');
 const path = require('path');
 const app = express();
+const mysql = require('mysql2');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'password',
+    database: 'eligible_voters'
+});
 
-const temp = {
-  'polling123': {
-      passwordHash: '$2a$10$WSoRfKK5gct8tqxzYHlqbeIItF1u8sFDK.4.Su7OklhXmHZ15aSxO' // bcrypt hash of "password123"
-  },
-};
+const { createHash } = require('crypto');
+
+function hash(string) {
+  return createHash('sha256').update(string).digest('hex');
+}
 
 
 app.get('/', (req, res) => {
@@ -32,18 +39,14 @@ app.get('/checkin', (req, res) => {
     });
   });
 
-app.post('/login', (req, res) => {
-  if (users[pollingId]) {
+app.post('/checkin/login', (req, res) => {
+const { polling_place_id, password } = req.body;
+  if (polling_place_id && password) {
     // Compare the provided password hash with the stored one
-    bcrypt.compare(passwordHash, users[pollingId].passwordHash, (err, isMatch) => {
-        if (err) {
-            return res.status(500).send('Error comparing password hashes.');
-        }
-        
-        if (isMatch) {
-            res.sendFile('query.html');
-        } else {
-            res.send(`
+    const query = 'SELECT password FROM polling_places WHERE polling_place_id = ?';
+    connection.query(query, [polling_place_id], (err, results) =>{
+        if (err || results.length === 0) {
+            res.status(500).send(`
                 <html>
                     <body>
                         <h1>Login Failed</h1>
@@ -52,9 +55,22 @@ app.post('/login', (req, res) => {
                     </body>
                 </html>
             `);
+            return;
+        }
+        if (results[0].password === password) {
+            return res.status(200).json({ message: 'Login successful!' });
         }
     });
   }
+  res.send(`
+    <html>
+        <body>
+            <h1>Login Failed</h1>
+            <p>Invalid polling ID or password hash. Please try again.</p>
+            <a href="/">Back to login</a>
+        </body>
+    </html>
+`);
 });
 
 app.listen(3000, () => {
