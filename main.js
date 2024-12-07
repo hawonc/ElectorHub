@@ -73,6 +73,6 @@ const { polling_place_id, password } = req.body;
 `);
 });
 
-app.listen(3000, () => {
-  console.log('Server listening on port 3000');
+app.listen(3030, () => {
+  console.log('Server listening on port 3030');
 });
