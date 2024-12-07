@@ -38,7 +38,7 @@ app.get('/', (req, res) => {
 
 app.post('/register', async (req, res) => {
   try {
-      const { name, dob, addr, city, zip, id, registerSignature } = req.body;
+      const { name, dob, addr, city, zip, id } = req.body;
 
       // Check against eligible voters database
       const eligibleQuery = 'SELECT * FROM voters WHERE name = ? AND date_of_birth = ?';
@@ -51,7 +51,8 @@ app.post('/register', async (req, res) => {
               return res.status(400).send('Voter is not eligible to register');
           }
 
-          address = addr + city + zip
+          address = addr + city + zip;
+          registerSignature = true;
           // Add voter to the blockchain
           const voterPayload = {
               name,
