@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const mysql = require('mysql');
+const axios = require('axios');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,6 +23,10 @@ db.connect((err) => {
 });
 
 app.get('/', (req, res) => {
+  res.send('Registration site');
+});
+
+app.get('/register', (req, res) => {
     const options = {
         root: path.join(__dirname)
     };
@@ -37,12 +42,12 @@ app.get('/', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-    try {
+  try {
       const { name, dob, address, id, registerSignature } = req.body;
-  
+
       // Check against eligible voters database
-      const eligibleQuery = 'SELECT * FROM voters WHERE name = ? AND dob = ? AND address = ? AND (drivers_license_number = ? OR SUBSTRING(social_security_number, -4) = ?';
-      db.query(eligibleQuery, [name, dob], (err, results) => {
+      const eligibleQuery = 'SELECT * FROM voters WHERE name = ? AND dob = ?';
+      db.query(eligibleQuery, [name, dob], async (err, results) => {
           if (err) {
               throw err;
           }
@@ -52,17 +57,28 @@ app.post('/register', async (req, res) => {
           }
 
           // Add voter to the blockchain
-
-      });  
-      
-      
-      res.send('Registration successful');
-    } catch (error) {
+          const voterPayload = {
+              name,
+              dob,
+              address,
+              id,
+              registerSignature
+          };
+          try {
+              const blockchainResponse = await axios.post('http://localhost:5000/voter/register', voterPayload);
+              console.log('Blockchain response:', blockchainResponse.data);
+              res.send('Registration successful');
+          } catch (blockchainError) {
+              console.error('Error communicating with blockchain:', blockchainError);
+              res.status(500).send('Error adding voter to blockchain');
+          }
+      });
+  } catch (error) {
       res.status(500).send('Error registering voter');
       console.error('Error:', error);
-    }
-  });
-  
+  }
+});
+
 
 app.get('/status', (req, res) => {
     const options = {
@@ -80,23 +96,34 @@ app.get('/status', (req, res) => {
 });
 
 app.post('/check', async (req, res) => {
-    try {
+  try {
       const { name, dob } = req.body;
-  
-    // Check if the voter is on the blockchain
-    const registeredVoter = true;
-  
-      if (registeredVoter) {
-        res.send('Voter is registered');
-      } else {
-        res.send('Voter is not registered');
+
+      // Check if the voter is on the blockchain
+      try {
+          const blockchainResponse = await axios.get('http://localhost:5000/chain');
+          const chain = blockchainResponse.data.chain;
+          const voterRegistered = chain.some(block => 
+              block.transactions.some(transaction => 
+                  transaction.sender === "0" && transaction.recipient === name && JSON.parse(transaction.amount).dob === dob
+              )
+          );
+
+          if (voterRegistered) {
+              res.send('Voter is registered');
+          } else {
+              res.send('Voter is not registered');
+          }
+      } catch (blockchainError) {
+          console.error('Error communicating with blockchain:', blockchainError);
+          res.status(500).send('Error checking registration status');
       }
-    } catch (error) {
+  } catch (error) {
       res.status(500).send('Error checking registration status');
       console.error('Error:', error);
-    }
-  });
-  
+  }
+});
+
 
 app.listen(3031, () => {
     console.log('Server listening on port 3031');
