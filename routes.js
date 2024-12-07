@@ -38,7 +38,7 @@ app.get('/', (req, res) => {
 
 app.post('/register', async (req, res) => {
   try {
-      const { name, dob, address, id, registerSignature } = req.body;
+      const { name, dob, address, city, zip, id, registerSignature } = req.body;
 
       // Check against eligible voters database
       const eligibleQuery = 'SELECT * FROM voters WHERE name = ? AND date_of_birth = ?';
@@ -51,6 +51,7 @@ app.post('/register', async (req, res) => {
               return res.status(400).send('Voter is not eligible to register');
           }
 
+          address = address + city + zip
           // Add voter to the blockchain
           const voterPayload = {
               name,
@@ -60,7 +61,7 @@ app.post('/register', async (req, res) => {
               registerSignature
           };
           try {
-              const blockchainResponse = await axios.post('http://localhost:5000/voter/register', voterPayload);
+              const blockchainResponse = await axios.post('http://127.0.0.1:5000/voter/register', voterPayload);
               console.log('Blockchain response:', blockchainResponse.data);
               res.send('Registration successful');
           } catch (blockchainError) {
