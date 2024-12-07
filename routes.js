@@ -41,8 +41,10 @@ app.post('/register', async (req, res) => {
       const { name, dob, addr, city, zip, id } = req.body;
 
       // Check against eligible voters database
-      const eligibleQuery = 'SELECT * FROM voters WHERE name = ? AND date_of_birth = ?';
-      db.query(eligibleQuery, [name, dob], async (err, results) => {
+      const eligibleQuery = 'SELECT * FROM voters WHERE name = ? AND date_of_birth = ? AND zip_code = ? AND street_address = ? \
+                             AND (drivers_license_number = ? OR SUBSTR(social_security_number, LENGTH(social_security_number) - 3, 4) = ?';
+      address = addr + ', ' + city;
+      db.query(eligibleQuery, [name, dob, zip, address, id, id], async (err, results) => {
           if (err) {
               throw err;
           }
@@ -51,7 +53,6 @@ app.post('/register', async (req, res) => {
               return res.status(400).send('Voter is not eligible to register');
           }
 
-          address = addr + city + zip;
           registerSignature = true;
           // Add voter to the blockchain
           const voterPayload = {
