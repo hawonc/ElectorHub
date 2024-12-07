@@ -96,7 +96,7 @@ app.post('/check', async (req, res) => {
 
       // Check if the voter is on the blockchain
       try {
-          const blockchainResponse = await axios.get('http://localhost:5000/chain');
+          const blockchainResponse = await axios.get('http://127.0.0.1:5000/chain');
           const chain = blockchainResponse.data.chain;
           const voterRegistered = chain.some(block => 
               block.transactions.some(transaction => 
