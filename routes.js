@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const axios = require('axios');
 
 app.use(express.json());
