@@ -221,7 +221,7 @@ def chain():
     for block in blockchain.chain:
         if len(block['transactions']) != 0 and block['transactions'][0]['recipient'] == name and block['vote_credit'] != 0:
             block['vote_credit'] = 0
-            return jsonify(block['proof']), 200
+            return jsonify(block), 200
     response = {'message': f'Block was not found for recipient: {name}'}
     return jsonify(response), 404
 
@@ -278,7 +278,7 @@ def register_voter():
     index = blockchain.new_transaction(
         sender="0",
         recipient=values['name'],
-        amount=digest,
+        amount=digest.hexdigest(),
     )
     with open ("private_key.pem", "r") as f:
         private_key = RSA.importKey(f.read())
