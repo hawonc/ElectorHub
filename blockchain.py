@@ -157,8 +157,7 @@ class Blockchain:
         :param block: Block
         """
 
-        # We must make sure that the Dictionary is Ordered, or we'll have inconsistent hashes
-        block_string = json.dumps(block, sort_keys=True).encode()
+        block_string = json.dumps(block['index']).encode()
         return hashlib.sha256(block_string).hexdigest()
 
 
@@ -200,7 +199,7 @@ def new_transaction():
         return 'Missing values', 400
 
     # Create a new Transaction
-    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'].hexdigest())
 
     response = {'message': f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
@@ -222,7 +221,7 @@ def chain():
     for block in blockchain.chain:
         if len(block['transactions']) != 0 and block['transactions'][0]['recipient'] == name and block['vote_credit'] != 0:
             block['vote_credit'] = 0
-            return jsonify(block), 200
+            return jsonify(block['proof']), 200
     response = {'message': f'Block was not found for recipient: {name}'}
     return jsonify(response), 404
 
@@ -285,7 +284,7 @@ def register_voter():
         private_key = RSA.importKey(f.read())
     
     signer = PKCS1_v1_5.new(private_key)
-    sig = signer.sign(blockchain.current_transactions[0]['amount'])
+    sig = signer.sign(digest)
     blockchain.new_block(sig.hex(), blockchain.hash(blockchain.last_block))
     response = {'message': f'Voter registration transaction will be added to Block {index}. Signature of transaction: {sig.hex()}'}
     return jsonify(response), 201
