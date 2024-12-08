@@ -71,6 +71,9 @@ app.post('/login', (req, res) => {
             if (results[0].password === hash(password)) {
                 req.session.loggedIn = true;
                 const fileName = 'checkin.html';
+                const options = {
+                    root: path.join(__dirname)
+                };
                 res.status(200).sendFile(fileName, options, function (err) {
                     if (err) {
                         console.error('Error sending:', err);
