@@ -113,8 +113,8 @@ app.post('/query', async (req, res) => {
             console.log('Blockchain response:', blockchainResponse.data);
             res.status(200).send('Voter checkin successful');
         } catch (blockchainError) {
-            console.error('Error communicating with blockchain:', blockchainError);
-            res.status(500).send('Error querying blockchain');
+            console.error(' communicating with blockchain:', blockchainError);
+            res.status(500).send(' querying blockchain');
         }
     } else {
         return res.status(403).send(`
