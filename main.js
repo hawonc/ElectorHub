@@ -4,7 +4,6 @@ const app = express();
 const mysql = require('mysql2');
 const session = require('express-session');
 const axios = require('axios');
-const { createHash } = require('crypto');
 const fs = require('fs');
 const pathToSecretKey = path.join(__dirname, 'secret.key');
 

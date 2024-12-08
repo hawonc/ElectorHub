@@ -219,7 +219,7 @@ def full_chain():
 @app.route('/vote', methods=['POST'])
 def chain():
     name = request.get_json().get('name')
-    for block in chain:
+    for block in blockchain.chain:
         if block['transactions']['recipient'] == name and block['vote_credit'] != 0:
             block['vote_credit'] = 0
             return jsonify(block), 200
