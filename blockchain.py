@@ -3,6 +3,10 @@ import json
 from time import time
 from urllib.parse import urlparse
 from uuid import uuid4
+from datetime import datetime
+from hashlib import sha256
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.PublicKey import RSA
 
 import requests
 from flask import Flask, jsonify, request
@@ -13,6 +17,7 @@ class Blockchain:
         self.current_transactions = []
         self.chain = []
         self.nodes = set()
+        self.updated_time = 0
 
         # Create the genesis block
         self.new_block(previous_hash='1', proof=100)
@@ -55,8 +60,8 @@ class Blockchain:
             if block['previous_hash'] != last_block_hash:
                 return False
 
-            # Check that the Proof of Work is correct
-            if not self.valid_proof(last_block['proof'], block['proof'], last_block_hash):
+            # Check that the Proof of Stake is correct
+            if not self.valid_proof(block['proof'], block['transactions']['amount']):
                 return False
 
             last_block = block
@@ -76,19 +81,19 @@ class Blockchain:
         new_chain = None
 
         # We're only looking for chains longer than ours
-        max_length = len(self.chain)
+        newest = self.updated_time
 
         # Grab and verify the chains from all the nodes in our network
         for node in neighbours:
             response = requests.get(f'http://{node}/chain')
 
             if response.status_code == 200:
-                length = response.json()['length']
+                time = response.json()['updated_time']
                 chain = response.json()['chain']
 
                 # Check if the length is longer and the chain is valid
-                if length > max_length and self.valid_chain(chain):
-                    max_length = length
+                if time > newest and self.valid_chain(chain):
+                    newest = time
                     new_chain = chain
 
         # Replace our chain if we discovered a new, valid chain longer than ours
@@ -113,10 +118,12 @@ class Blockchain:
             'transactions': self.current_transactions,
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1]),
+            'vote_credit': 1,
         }
 
         # Reset the current list of transactions
         self.current_transactions = []
+        self.updated_time = time()
 
         self.chain.append(block)
         return block
@@ -154,28 +161,9 @@ class Blockchain:
         block_string = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
 
-    def proof_of_work(self, last_block):
-        """
-        Simple Proof of Work Algorithm:
-
-         - Find a number p' such that hash(pp') contains leading 4 zeroes
-         - Where p is the previous proof, and p' is the new proof
-         
-        :param last_block: <dict> last Block
-        :return: <int>
-        """
-
-        last_proof = last_block['proof']
-        last_hash = self.hash(last_block)
-
-        proof = 0
-        while self.valid_proof(last_proof, proof, last_hash) is False:
-            proof += 1
-
-        return proof
 
     @staticmethod
-    def valid_proof(last_proof, proof, last_hash):
+    def valid_proof(proof, amount):
         """
         Validates the Proof
 
@@ -186,9 +174,10 @@ class Blockchain:
 
         """
 
-        guess = f'{last_proof}{proof}{last_hash}'.encode()
-        guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:4] == "0000"
+        public_key = RSA.importKey(open("public_key.txt").read())
+        verifier = PKCS1_v1_5.new(public_key)
+        verified = verifier.verify(amount, proof)
+        return verified
 
 
 # Instantiate the Node
@@ -199,34 +188,6 @@ node_identifier = str(uuid4()).replace('-', '')
 
 # Instantiate the Blockchain
 blockchain = Blockchain()
-
-
-@app.route('/mine', methods=['GET'])
-def mine():
-    # We run the proof of work algorithm to get the next proof...
-    last_block = blockchain.last_block
-    proof = blockchain.proof_of_work(last_block)
-
-    # We must receive a reward for finding the proof.
-    # The sender is "0" to signify that this node has mined a new coin.
-    blockchain.new_transaction(
-        sender="0",
-        recipient=node_identifier,
-        amount=1,
-    )
-
-    # Forge the new Block by adding it to the chain
-    previous_hash = blockchain.hash(last_block)
-    block = blockchain.new_block(proof, previous_hash)
-
-    response = {
-        'message': "New Block Forged",
-        'index': block['index'],
-        'transactions': block['transactions'],
-        'proof': block['proof'],
-        'previous_hash': block['previous_hash'],
-    }
-    return jsonify(response), 200
 
 
 @app.route('/transactions/new', methods=['POST'])
@@ -250,8 +211,20 @@ def full_chain():
     response = {
         'chain': blockchain.chain,
         'length': len(blockchain.chain),
+        'updated_time': blockchain.updated_time,
     }
     return jsonify(response), 200
+
+
+@app.route('/vote', methods=['POST'])
+def chain():
+    name = request.get_json().get('name')
+    for block in chain:
+        if block['transactions']['recipient'] == name and block['vote_credit'] != 0:
+            block['vote_credit'] = 0
+            return jsonify(block), 200
+    response = {'message': f'Block was not found for recipient: {name}'}
+    return jsonify(response), 404
 
 
 @app.route('/nodes/register', methods=['POST'])
@@ -297,19 +270,22 @@ def register_voter():
     required = ['name', 'dob']
     if not all(k in values for k in required):
         return 'Missing values', 400
-
+    info = json.dumps({
+            'dob': values['dob'],
+            'address': values['address'],
+        })
     index = blockchain.new_transaction(
         sender="0",
         recipient=values['name'],
-        amount=json.dumps({
-            'dob': values['dob'],
-            'address': values['address'],
-            'id': values['id'],
-            'registerSignature': values['registerSignature']
-        })
+        amount=sha256(info.encode('utf-8')).hexdigest(),
     )
-
-    response = {'message': f'Voter registration transaction will be added to Block {index}'}
+    with open ("private_key.pem", "r") as f:
+        private_key = RSA.importKey(f.read())
+    
+    signer = PKCS1_v1_5.new(private_key)
+    sig = signer.sign(blockchain.current_transactions[0]['amount'])
+    blockchain.new_block(sig.hex(), blockchain.hash(blockchain.last_block))
+    response = {'message': f'Voter registration transaction will be added to Block {index}. Signature of transaction: {sig.hex()}'}
     return jsonify(response), 201
     
 
