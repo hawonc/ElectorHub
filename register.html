@@ -52,5 +52,27 @@
             }
         });
     </script>
+    <h2>Check Registration Status</h2>
+    <form id="status-form" action="/check" method="post">
+        <label for="name">Full Name</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="dob">Date of Birth</label><br>
+        <input type="date" id="dob" name="dob" required><br><br>
+
+        <button type="submit">Check Status</button>
+    </form>
+    
+    <script>
+        document.getElementById('status-form').addEventListener('submit', function (event) {
+            var name = document.getElementById('name').value;
+            var dob = document.getElementById('dob').value;
+
+            if (!name || !dob) {
+                event.preventDefault();
+                alert('Please fill in both fields.');
+            }
+        });
+    </script>
 </body>
 </html>
