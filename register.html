@@ -16,13 +16,13 @@
         <input type="date" id="dob" name="dob" required><br><br>
 
         <label for="address">Street Address</label><br>
-        <input type="text" id="street-adress" name="street-adress" required><br><br>
+        <input type="text" id="address" name="address" required><br><br>
 
         <label for="address">City</label><br>
         <input type="text" id="city" name="city" required><br><br>
 
         <label for="address">Zip Code</label><br>
-        <input type="text" id="zip-code" name="zip-code" required><br><br>
+        <input type="text" id="zip" name="zip" required><br><br>
 
         <label for="id">Driver's License Number or Last 4 Digits of SSN (Choose One to Enter)</label><br>
         <input type="text" id="id" name="id" required><br><br>
@@ -40,9 +40,9 @@
         document.getElementById('register-form').addEventListener('submit', function (event) {
             var name = document.getElementById('name').value;
             var dob = document.getElementById('dob').value;
-            var address = document.getElementById('street-adress').value;
+            var address = document.getElementById('address').value;
             var city = document.getElementById('city').value;
-            var zip = document.getElementById('zip-code').value;
+            var zip = document.getElementById('zip').value;
             var id = document.getElementById('id').value;
             var signatureYes = document.getElementById('signature-yes').checked;
 
