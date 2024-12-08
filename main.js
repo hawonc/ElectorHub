@@ -4,6 +4,7 @@ const app = express();
 const mysql = require('mysql2');
 const session = require('express-session');
 const axios = require('axios');
+const { createHash } = require('crypto');
 const fs = require('fs');
 const pathToSecretKey = path.join(__dirname, 'secret.key');
 
@@ -33,10 +34,6 @@ function hash(string) {
 }
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-app.get('/checkin', (req, res) => {
     const options = {
         root: path.join(__dirname)
     };
@@ -51,7 +48,7 @@ app.get('/checkin', (req, res) => {
     });
 });
 
-app.post('/checkin/login', (req, res) => {
+app.post('/login', (req, res) => {
     const { polling_place_id, password } = req.body;
     
     if (polling_place_id && password) {
@@ -69,9 +66,11 @@ app.post('/checkin/login', (req, res) => {
                 `);
                 return;
             }
-            if (results[0].password === password) {
+            console.log(results[0].password)
+            console.log(password)
+            if (results[0].password === hash(password)) {
                 req.session.loggedIn = true;
-                const fileName = 'login.html';
+                const fileName = 'checkin.html';
                 res.status(200).sendFile(fileName, options, function (err) {
                     if (err) {
                         console.error('Error sending:', err);
@@ -104,7 +103,7 @@ app.post('/checkin/login', (req, res) => {
     }
 });
 
-app.post('/checkin/query', async (req, res) => {
+app.post('/query', async (req, res) => {
     if (req.session.loggedIn) {
         try {
             const { name } = req.body;
