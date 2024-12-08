@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+</head>
+<body>
+    <h1>Welcome! You have successfully logged in.</h1>
+    <p>Please the name to query below:</p>
+    
+    <form id="nameForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- This div will hold the response message -->
+    <div id="responseMessage" style="margin-top: 20px;"></div>
+
+    <script>
+        document.getElementById('nameForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Prevent the default form submission
+            
+            // Get the name value from the form
+            const name = document.getElementById('name').value;
+
+            // Create the data to send in the POST request
+            const data = { name: name };
+
+            // Create an XMLHttpRequest (AJAX request)
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/query', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            // Define what happens when the request completes
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // If successful, display the response message at the bottom
+                    document.getElementById('responseMessage').innerHTML = `<p>Success: ${xhr.responseText}</p>`;
+                } else {
+                    // If there is an error, show an error message
+                    document.getElementById('responseMessage').innerHTML = `<p>Error: ${xhr.responseText}</p>`;
+                }
+            };
+
+            // Send the request with the name data as a JSON string
+            xhr.send(JSON.stringify(data));
+        });
+    </script>
+</body>
+</html>

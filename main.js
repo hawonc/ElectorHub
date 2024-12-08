@@ -71,7 +71,14 @@ app.post('/checkin/login', (req, res) => {
             }
             if (results[0].password === password) {
                 req.session.loggedIn = true;
-                return res.status(200).json({ message: 'Login successful!' });
+                const fileName = 'login.html';
+                res.status(200).sendFile(fileName, options, function (err) {
+                    if (err) {
+                        console.error('Error sending:', err);
+                    } else {
+                        console.log('Sent:', fileName);
+                    }
+                });
             } else {
                 res.status(500).send(`
                     <html>
@@ -103,7 +110,7 @@ app.post('/checkin/query', async (req, res) => {
             const { name } = req.body;
             const blockchainResponse = await axios.post('http://127.0.0.1:5000/vote', {'name': name});
             console.log('Blockchain response:', blockchainResponse.data);
-            res.send('Voter checkin successful');
+            res.status(200).send('Voter checkin successful');
         } catch (blockchainError) {
             console.error('Error communicating with blockchain:', blockchainError);
             res.status(500).send('Error querying blockchain');
