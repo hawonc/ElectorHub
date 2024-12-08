@@ -40,11 +40,13 @@
         document.getElementById('register-form').addEventListener('submit', function (event) {
             var name = document.getElementById('name').value;
             var dob = document.getElementById('dob').value;
-            var address = document.getElementById('address').value;
+            var address = document.getElementById('street-adress').value;
+            var city = document.getElementById('city').value;
+            var zip = document.getElementById('zip-code').value;
             var id = document.getElementById('id').value;
             var signatureYes = document.getElementById('signature-yes').checked;
 
-            if (!name || !dob || !address || !id || !signatureYes) {
+            if (!name || !dob || !address || !city || !zip || !id || !signatureYes) {
                 event.preventDefault();
                 alert('Please fill in all fields and confirm your signature with "Yes".');
             }
