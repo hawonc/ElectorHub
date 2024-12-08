@@ -39,6 +39,7 @@ app.get('/', (req, res) => {
 app.post('/register', async (req, res) => {
   try {
       const { name, dob, address, city, zip, id } = req.body;
+      console.log(name, dob, address, city, zip, id);
 
       // Check against eligible voters database
       const eligibleQuery = 'SELECT * FROM voters WHERE name = ? AND date_of_birth = ? AND zip_code = ? AND street_address = ? \
