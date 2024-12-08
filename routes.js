@@ -95,7 +95,7 @@ app.get('/status', (req, res) => {
 
 app.post('/check', async (req, res) => {
   try {
-      const { name, dob } = req.body;
+      const { nameCheck, dobCheck } = req.body;
 
       // Check if the voter is on the blockchain
       try {
@@ -103,7 +103,7 @@ app.post('/check', async (req, res) => {
           const chain = blockchainResponse.data.chain;
           const voterRegistered = chain.some(block => 
               block.transactions.some(transaction => 
-                  transaction.sender === "0" && transaction.recipient === name && JSON.parse(transaction.amount).dob === dob
+                  transaction.sender === "0" && transaction.recipient === nameCheck && JSON.parse(transaction.amount).dob === dobCheck
               )
           );
 
