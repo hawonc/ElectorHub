@@ -220,7 +220,7 @@ def full_chain():
 def chain():
     name = request.get_json().get('name')
     for block in blockchain.chain:
-        if block['transactions']['recipient'] == name and block['vote_credit'] != 0:
+        if block['transactions'][0]['recipient'] == name and block['vote_credit'] != 0:
             block['vote_credit'] = 0
             return jsonify(block), 200
     response = {'message': f'Block was not found for recipient: {name}'}
