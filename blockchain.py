@@ -4,9 +4,9 @@ from time import time
 from urllib.parse import urlparse
 from uuid import uuid4
 from datetime import datetime
-from hashlib import sha256
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.PublicKey import RSA
+from Crypto.Hash import SHA256
 
 import requests
 from flask import Flask, jsonify, request
@@ -274,16 +274,18 @@ def register_voter():
             'dob': values['dob'],
             'address': values['address'],
         })
+    digest = SHA256.new()
+    digest.update(info.encode('utf-8'))
     index = blockchain.new_transaction(
         sender="0",
         recipient=values['name'],
-        amount=sha256(info.encode('utf-8')).hexdigest(),
+        amount=digest,
     )
     with open ("private_key.pem", "r") as f:
         private_key = RSA.importKey(f.read())
     
     signer = PKCS1_v1_5.new(private_key)
-    sig = signer.sign(bytes.fromhex(blockchain.current_transactions[0]['amount']))
+    sig = signer.sign(blockchain.current_transactions[0]['amount'])
     blockchain.new_block(sig.hex(), blockchain.hash(blockchain.last_block))
     response = {'message': f'Voter registration transaction will be added to Block {index}. Signature of transaction: {sig.hex()}'}
     return jsonify(response), 201
