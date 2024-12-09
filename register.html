@@ -57,18 +57,14 @@
         <label for="name">Full Name</label><br>
         <input type="text" id="name" name="nameCheck" required><br><br>
 
-        <label for="dob">Date of Birth</label><br>
-        <input type="date" id="dob" name="dobCheck" required><br><br>
-
         <button type="submit">Check Status</button>
     </form>
     
     <script>
         document.getElementById('status-form').addEventListener('submit', function (event) {
             var nameCheck = document.getElementById('nameCheck').value;
-            var dobCheck = document.getElementById('dobCheck').value;
 
-            if (!nameCheck || !dobCheck) {
+            if (!nameCheck) {
                 event.preventDefault();
                 alert('Please fill in both fields.');
             }
