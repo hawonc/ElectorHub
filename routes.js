@@ -105,7 +105,7 @@ app.post('/check', async (req, res) => {
           voterRegistered = false;
           for (let i = 0; i < chain.length; i++) {
               if (chain[i]['transactions'].length != 0) {
-                  console.log(chain[i]['transactions'][0].recipient === nameCheck);
+                  console.log(chain[i]['transactions'][0].recipient == nameCheck);
                   if(chain[i]['transactions'][0].recipient === nameCheck){
                       voterRegistered = true;
                   }
