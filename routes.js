@@ -101,6 +101,10 @@ app.post('/check', async (req, res) => {
       try {
           const blockchainResponse = await axios.get('http://127.0.0.1:5000/chain');
           const chain = blockchainResponse.data.chain;
+          console.log(chain);
+          for (let i = 0; i < chain.length; i++) {
+              console.log(chain[i].recipient);
+          }        
           const voterRegistered = chain.some(block => 
               block.transactions.some(transaction => 
                   transaction.sender === "0" && transaction.recipient === nameCheck
