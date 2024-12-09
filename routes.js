@@ -102,16 +102,14 @@ app.post('/check', async (req, res) => {
           const blockchainResponse = await axios.get('http://127.0.0.1:5000/chain');
           const chain = blockchainResponse.data.chain;
           console.log(chain);
+          voterRegistered = false;
           for (let i = 0; i < chain.length; i++) {
               if (chain[i]['transactions'].length != 0) {
-                  console.log(chain[i]['transactions'][0].recipient);
+                  if(chain[i]['transactions'][0].recipient === nameCheck && chain[i]['transactions'][0].sender === "0" ){
+                      voterRegistered = true;
+                  }
               }
           }        
-          const voterRegistered = chain.some(block => 
-              block.transactions.some(transaction => 
-                  transaction.sender === "0" && transaction[0].recipient === nameCheck
-              )
-          );
 
           if (voterRegistered) {
               res.send('Voter is registered');
