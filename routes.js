@@ -103,7 +103,7 @@ app.post('/check', async (req, res) => {
           const chain = blockchainResponse.data.chain;
           console.log(chain);
           for (let i = 0; i < chain.length; i++) {
-              console.log(chain[i].recipient);
+              console.log(chain[i]);
           }        
           const voterRegistered = chain.some(block => 
               block.transactions.some(transaction => 
